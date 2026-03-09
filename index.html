@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>TOURNOI TAROT - C. GASNIER</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        body { background-color: #064e3b; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .btn-nav { background-color: #065f46; transition: all 0.2s; border: 1px solid #10b981; }
+        .btn-nav:hover { background-color: #10b981; color: #064e3b; }
+        .btn-active { background-color: #10b981 !important; color: #064e3b !important; font-weight: 800; }
+        .table-card { background-color: #1f2937; border-radius: 12px; border: 1px solid #374151; }
+        .input-score { color: #111827; font-weight: 900; text-align: center; border-radius: 2px; width: 100%; font-size: 14px; padding: 6px 0; outline: none; border: none; }
+        .tour-complete { background-color: #cbd5e1 !important; color: #1e293b !important; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .row-grid { display: grid; grid-template-columns: 30px 50px 160px repeat(5, 60px); gap: 8px; align-items: center; }
+        .rank-1 { background-color: #fbbf24 !important; color: #000 !important; }
+        .rank-2 { background-color: #94a3b8 !important; color: #000 !important; }
+        .rank-3 { background-color: #b45309 !important; color: #fff !important; }
+        @media print { .no-print { display: none !important; } body { background: white; color: black; } }
+    </style>
+</head>
+<body class="p-4" onclick="initFullScreen()">
+
+    <header class="flex justify-between items-center mb-6 no-print">
+        <h1 id="main-title" class="text-2xl font-black italic uppercase"></h1>
+        <div class="flex gap-2">
+            <button onclick="downloadBackup()" class="bg-emerald-600 px-3 py-1 rounded text-[10px] uppercase font-bold border border-emerald-400 hover:bg-emerald-500">Exporter Sauvegarde</button>
+            <button onclick="document.getElementById('importFile').click()" class="btn-nav px-3 py-1 rounded text-[10px] uppercase font-bold">Importer</button>
+            <input type="file" id="importFile" class="hidden" onchange="importBackup(this)">
+            <button onclick="resetTournament()" class="bg-red-900 px-3 py-1 rounded text-[10px] uppercase font-bold border border-red-500 hover:bg-red-700">RAZ</button>
+            <button onclick="quitApp()" class="bg-gray-800 px-3 py-1 rounded text-[10px] uppercase font-bold border border-gray-500 hover:bg-black">Quitter</button>
+        </div>
+    </header>
+
+    <nav class="flex gap-2 mb-6 no-print justify-center sticky top-0 z-50 bg-[#064e3b] py-2 flex-wrap items-center">
+        <button onclick="openMainTab('inscriptions')" id="tab-link-inscriptions" class="btn-nav px-4 py-2 rounded-lg font-bold uppercase btn-active text-xs">Inscriptions</button>
+        <button onclick="openMainTab('parties')" id="tab-link-parties" class="btn-nav px-4 py-2 rounded-lg font-bold uppercase text-xs">Parties</button>
+        <button onclick="openMainTab('classement')" id="tab-link-classement" class="btn-nav px-4 py-2 rounded-lg font-bold uppercase text-xs">Classement 🏆</button>
+        <button onclick="printPlayerList()" class="bg-gray-700 px-4 py-2 rounded-lg font-bold uppercase text-xs hover:bg-gray-600 text-white">📋 Inscrits</button>
+        
+        <div class="flex items-center gap-1 bg-amber-900/40 p-1 rounded-lg border border-amber-600/30">
+            <select id="select-player-print" class="bg-amber-100 text-black text-[10px] font-bold py-2 px-2 rounded uppercase outline-none w-32">
+                <option value="all">TOUS LES JOUEURS</option>
+            </select>
+            <button onclick="handleRoadmapPrinting()" class="bg-amber-600 px-4 py-2 rounded-lg font-bold uppercase text-xs hover:bg-amber-500 text-white shadow-lg">🖨️ Imprimer Feuille(s)</button>
+        </div>
+    </nav>
+
+    <section id="tab-inscriptions" class="tab-content active max-w-4xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-black/20 p-6 rounded-xl border border-white/10 h-fit text-center">
+                <h2 class="text-xl font-bold mb-4 italic uppercase text-emerald-400">Configuration</h2>
+                
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="new-player-name" class="flex-1 p-3 rounded text-black font-bold uppercase text-center outline-none" placeholder="NOM PRÉNOM" onkeypress="if(event.key==='Enter') addPlayer()">
+                    <button onclick="addPlayer()" class="bg-green-600 px-4 rounded font-black hover:bg-green-500">OK</button>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-white/10">
+                    <label class="block text-[10px] uppercase font-bold mb-2 opacity-60 text-left">Fichier Excel / CSV (1ère colonne) :</label>
+                    <input type="file" id="excelFile" class="hidden" accept=".xlsx, .xls, .csv" onchange="importExcel(this)">
+                    <button onclick="document.getElementById('excelFile').click()" class="w-full bg-amber-600 py-3 rounded font-black hover:bg-amber-500 uppercase text-xs flex items-center justify-center gap-2">
+                        📊 Charger un fichier Excel
+                    </button>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-white/10 text-left">
+                    <label class="block text-[10px] uppercase font-bold mb-1 opacity-60">Ajout groupé (copier/coller) :</label>
+                    <textarea id="mass-names" class="w-full h-24 p-2 rounded text-black font-bold uppercase text-[10px] mb-2" placeholder="COLLEZ VOTRE LISTE ICI..."></textarea>
+                    <button onclick="addMassPlayers()" class="w-full bg-blue-700 py-2 rounded font-black hover:bg-blue-600 uppercase text-[10px]">Ajouter la liste</button>
+                </div>
+
+                <div class="border-t border-white/10 mt-6 pt-6">
+                    <label class="block text-xs uppercase font-bold mb-2 opacity-60">Nombre de parties</label>
+                    <input type="range" id="nbParties" min="1" max="12" value="12" class="w-full h-2 bg-emerald-900 rounded-lg appearance-none cursor-pointer accent-emerald-500" oninput="document.getElementById('nbOut').innerText = this.value">
+                    <output id="nbOut" class="text-2xl font-black text-emerald-400">12</output>
+                    <button onclick="generateTournament()" class="w-full bg-emerald-500 text-black py-4 mt-4 rounded-lg font-black uppercase text-sm shadow-xl hover:bg-emerald-400">Générer les tables</button>
+                </div>
+            </div>
+
+            <div class="bg-black/10 p-4 rounded-xl border border-white/5">
+                <div class="flex justify-between items-center mb-4 border-b border-emerald-500/30 pb-2">
+                    <h2 class="text-xl font-bold italic uppercase text-sm">Joueurs (<span id="count-players">0</span>)</h2>
+                    <button onclick="sortPlayersAlphabetically()" class="text-[10px] bg-white/10 hover:bg-white/20 px-2 py-1 rounded uppercase font-bold border border-white/20">Trier A-Z</button>
+                </div>
+                <ul id="players-list" class="space-y-1 max-h-[450px] overflow-y-auto pr-2 text-sm"></ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="tab-parties" class="tab-content">
+        <div id="parties-nav-container" class="flex justify-center gap-1 mb-6 no-print flex-wrap"></div>
+        <h2 id="current-partie-title" class="text-center text-5xl font-black italic mb-8 uppercase tracking-widest transition-colors duration-500"></h2>
+        <div id="tables-container" class="flex flex-col items-center gap-8"></div>
+    </section>
+
+    <section id="tab-classement" class="tab-content max-w-2xl mx-auto text-center">
+        <h2 class="text-3xl font-black italic mb-6 border-b-4 border-emerald-500 pb-2 uppercase text-emerald-400">Classement Général 🏆</h2>
+        <table class="w-full text-left bg-black/30 rounded-lg overflow-hidden border-collapse mb-6 shadow-2xl">
+            <thead class="bg-emerald-900 text-xs uppercase text-emerald-200">
+                <tr><th class="p-4 w-24 text-center">Rang</th><th class="p-4 w-16 text-center">N°</th><th class="p-4">Joueur</th><th class="p-4 text-right">Points</th></tr>
+            </thead>
+            <tbody id="body-classement"></tbody>
+        </table>
+        <button onclick="window.print()" class="no-print bg-emerald-600 px-8 py-3 rounded-full font-black uppercase text-sm shadow-lg hover:bg-emerald-500">🖨️ Imprimer</button>
+    </section>
+
+    <script>
+        const NOM_TOURNOI = "Tournoi de Tarot par C. GASNIER";
+        const COULEUR_TITRE = "#f5ee25";
+        const COULEURS_PARTIES = ["#60a5fa", "#f87171", "#fbbf24", "#34d399", "#a78bfa", "#f472b6", "#fb923c", "#2dd4bf", "#818cf8", "#fb7185", "#c084fc", "#4ade80"];
+        
+        const STORAGE_KEY = 'tarot_app_v15';
+        let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { joueurs: [], rotation: null };
+        let currentPartie = 1;
+
+        const headerTitle = document.getElementById('main-title');
+        headerTitle.innerText = NOM_TOURNOI;
+        headerTitle.style.color = COULEUR_TITRE;
+
+        window.addEventListener('beforeunload', function (e) { downloadBackup(); e.preventDefault(); e.returnValue = ''; });
+        function initFullScreen() { if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(() => {}); } }
+        function quitApp() { if(confirm("Voulez-vous quitter ? Sauvegarde auto activée.")) { window.close(); } }
+
+        // --- FONCTION IMPORT EXCEL ---
+        function importExcel(input) {
+            if (!input.files || !input.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
+                
+                let addedCount = 0;
+                rows.forEach((row, index) => {
+                    const name = row[0] ? row[0].toString().trim().toUpperCase() : "";
+                    // On ignore les lignes vides ou une éventuelle ligne d'en-tête "NOM"
+                    if (name && name !== "NOM" && name !== "JOUEUR") {
+                        state.joueurs.push({ id: Date.now() + index, num: state.joueurs.length + 1, nom: name, scores: [] });
+                        addedCount++;
+                    }
+                });
+                alert(`${addedCount} joueurs importés avec succès !`);
+                input.value = ""; // Reset input
+                save();
+            };
+            reader.readAsArrayBuffer(input.files[0]);
+        }
+
+        function addPlayer() {
+            const input = document.getElementById('new-player-name');
+            const name = input.value.trim().toUpperCase();
+            if (name) {
+                state.joueurs.push({ id: Date.now(), num: state.joueurs.length + 1, nom: name, scores: [] });
+                input.value = ''; save();
+            }
+        }
+
+        function addMassPlayers() {
+            const area = document.getElementById('mass-names');
+            const lines = area.value.split('\n');
+            let count = 0;
+            lines.forEach(line => {
+                const name = line.trim().toUpperCase();
+                if (name) {
+                    state.joueurs.push({ id: Date.now() + count, num: state.joueurs.length + 1, nom: name, scores: [] });
+                    count++;
+                }
+            });
+            area.value = ''; save();
+        }
+
+        function sortPlayersAlphabetically() {
+            if(state.rotation) {
+                if(!confirm("Attention : La rotation est déjà lancée. Trier la liste maintenant ne changera pas les tables. Continuer ?")) return;
+            }
+            state.joueurs.sort((a, b) => a.nom.localeCompare(b.nom));
+            state.joueurs.forEach((j, idx) => j.num = idx + 1);
+            save();
+        }
+
+        function save() { 
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); 
+            renderInscriptions();
+            updatePlayerSelect();
+        }
+
+        function updatePlayerSelect() {
+            const select = document.getElementById('select-player-print');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="all">TOUS LES JOUEURS</option>';
+            [...state.joueurs].sort((a,b) => a.nom.localeCompare(b.nom)).forEach(j => {
+                select.innerHTML += `<option value="${j.id}">${j.nom}</option>`;
+            });
+            select.value = currentVal;
+        }
+
+        function handleRoadmapPrinting() {
+            const val = document.getElementById('select-player-print').value;
+            if(!state.rotation) return alert("Générez la rotation d'abord !");
+            if(val === "all") {
+                printRoadmaps(state.joueurs);
+            } else {
+                const target = state.joueurs.filter(j => j.id == val);
+                printRoadmaps(target);
+            }
+        }
+
+        function generateTournament() {
+            const nb = parseInt(document.getElementById('nbParties').value);
+            if (state.joueurs.length < 4) return alert("Mini 4 joueurs.");
+            if (!confirm(`Générer ${nb} parties ?`)) return;
+            state.rotation = [];
+            state.joueurs.forEach(j => j.scores = Array.from({length: nb}, () => Array(5).fill("")));
+            for (let p = 0; p < nb; p++) {
+                let shuffled = [...state.joueurs].sort(() => Math.random() - 0.5);
+                let tables = [];
+                for (let i = 0; i < shuffled.length; i += 4) { if (shuffled[i+3]) tables.push(shuffled.slice(i, i + 4).map(j => j.id)); }
+                state.rotation.push(tables);
+            }
+            save(); renderPartie(1); openMainTab('parties');
+        }
+
+        function renderPartie(pNum) {
+            if(!state.rotation) return;
+            currentPartie = pNum;
+            const titleEl = document.getElementById('current-partie-title');
+            titleEl.innerText = `PARTIE N°${pNum}`;
+            titleEl.style.color = COULEURS_PARTIES[(pNum - 1) % COULEURS_PARTIES.length];
+            const nav = document.getElementById('parties-nav-container');
+            nav.innerHTML = state.rotation.map((_, i) => `<button onclick="renderPartie(${i+1})" class="btn-nav px-4 py-2 rounded text-[11px] font-black ${currentPartie === i+1 ? 'btn-active' : ''}">P${i+1}</button>`).join('');
+            const container = document.getElementById('tables-container');
+            container.innerHTML = state.rotation[pNum - 1].map((tableIds, tIdx) => {
+                const pos = ["NORD", "EST", "SUD", "OUEST"];
+                let tableSum = 0;
+                const playersHtml = tableIds.map((id, pIdx) => {
+                    const j = state.joueurs.find(x => x.id === id);
+                    const pScores = j.scores[pNum - 1];
+                    tableSum += pScores.reduce((a, b) => a + (parseInt(b) || 0), 0);
+                    return `<div class="row-grid bg-white/5 p-1 rounded border-b border-white/5">
+                        <div class="text-[11px] font-bold text-gray-400 text-center">${j.num}</div>
+                        <div class="text-[9px] font-bold text-emerald-500 bg-emerald-950/50 py-1 rounded text-center">${pos[pIdx]}</div>
+                        <div class="text-left font-black text-xs uppercase truncate pl-2">${j.nom}</div>
+                        ${pScores.map((s, tourIdx) => `<input type="text" value="${s}" id="in-${j.id}-${tourIdx}" oninput="updateScore(${j.id}, ${pNum-1}, ${tourIdx}, this.value)" class="input-score">`).join('')}
+                    </div>`;
+                }).join('');
+                return `<div class="table-card p-6 shadow-2xl border-l-8 border-emerald-500 w-fit">
+                    <div class="row-grid mb-4">
+                        <div class="col-span-3 text-emerald-400 font-black uppercase italic text-xl">TABLE ${tIdx + 1}</div>
+                        ${[1,2,3,4,5].map(n => `<div class="text-center text-[10px] font-black uppercase opacity-40">T ${n}</div>`).join('')}
+                    </div>
+                    ${playersHtml}
+                    <div class="mt-6 flex justify-between items-center bg-black/20 p-3 rounded-lg border border-white/10">
+                        <span class="text-xs uppercase font-black opacity-60">Somme :</span>
+                        <div id="check-${tIdx}" class="px-8 text-center font-black rounded-md ${tableSum === 0 ? 'bg-green-600' : 'bg-red-600'} text-lg py-1">${tableSum}</div>
+                    </div>
+                </div>`;
+            }).join('');
+            updateVisualTours();
+        }
+
+        function updateScore(jId, pIdx, tourIdx, val) {
+            const j = state.joueurs.find(x => x.id === jId);
+            j.scores[pIdx][tourIdx] = val;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            const tableIds = state.rotation[pIdx].find(ids => ids.includes(jId));
+            const tIdx = state.rotation[pIdx].indexOf(tableIds);
+            let sum = 0;
+            tableIds.forEach(id => sum += state.joueurs.find(x => x.id === id).scores[pIdx].reduce((a, b) => a + (parseInt(b) || 0), 0));
+            const el = document.getElementById(`check-${tIdx}`);
+            if(el) {
+                el.innerText = sum;
+                el.className = `px-8 text-center font-black rounded-md ${sum === 0 ? 'bg-green-600' : 'bg-red-600'} text-lg py-1`;
+            }
+            updateVisualTours();
+        }
+
+        function updateVisualTours() {
+            if(!state.rotation) return;
+            state.rotation[currentPartie-1].forEach((tableIds) => {
+                for(let t=0; t<5; t++) {
+                    const complet = tableIds.every(id => state.joueurs.find(x => x.id === id).scores[currentPartie-1][t] !== "");
+                    tableIds.forEach(id => {
+                        const input = document.getElementById(`in-${id}-${t}`);
+                        if(input) input.classList.toggle('tour-complete', complet);
+                    });
+                }
+            });
+        }
+
+        function resetTournament() { if(confirm("⚠ TOUT EFFACER ?")) { localStorage.clear(); location.reload(); } }
+
+        function openMainTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('nav .btn-nav').forEach(b => b.classList.remove('btn-active'));
+            document.getElementById(`tab-${id}`).classList.add('active');
+            document.getElementById(`tab-link-${id}`).classList.add('btn-active');
+            if(id === 'parties') renderPartie(currentPartie);
+            if(id === 'classement') renderClassement();
+        }
+
+        function renderInscriptions() {
+            document.getElementById('count-players').innerText = state.joueurs.length;
+            const list = document.getElementById('players-list');
+            list.innerHTML = state.joueurs.map(j => `<li class="flex justify-between p-2 bg-white/5 rounded mb-1"><span>${j.num} - ${j.nom}</span><button onclick="removePlayer(${j.id})" class="text-red-400 px-2">✕</button></li>`).join('');
+        }
+
+        function renderClassement() {
+            const getCumul = (j) => j.scores.flat().reduce((a, b) => a + (parseInt(b) || 0), 0);
+            const sorted = [...state.joueurs].sort((a,b) => getCumul(b) - getCumul(a));
+            document.getElementById('body-classement').innerHTML = sorted.map((j, i) => {
+                let medal = i + 1; let rowClass = "";
+                if(i === 0) { medal = "🥇"; rowClass = "rank-1"; }
+                else if(i === 1) { medal = "🥈"; rowClass = "rank-2"; }
+                else if(i === 2) { medal = "🥉"; rowClass = "rank-3"; }
+                return `<tr class="border-b border-white/5 ${rowClass}">
+                    <td class="p-4 text-center font-black text-xl">${medal}</td>
+                    <td class="p-4 text-xs opacity-70 text-center font-bold">${j.num}</td>
+                    <td class="p-4 font-black uppercase tracking-wide">${j.nom}</td>
+                    <td class="p-4 text-right font-black text-2xl">${getCumul(j)}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function printPlayerList() {
+            const w = window.open();
+            const sorted = [...state.joueurs].sort((a,b) => a.nom.localeCompare(b.nom));
+            let html = `<h2 style="text-align:center">LISTE D'INSCRITS</h2><table border="1" style="width:100%; border-collapse:collapse"><tr><th>N°</th><th>NOM PRÉNOM</th><th>SIGNATURE</th></tr>`;
+            sorted.forEach(j => html += `<tr><td style="text-align:center">${j.num}</td><td style="padding:10px">${j.nom}</td><td style="height:40px"></td></tr>`);
+            w.document.write(html + "</table>"); w.print();
+        }
+
+        function printRoadmaps(joueursArray) {
+            const w = window.open();
+            let html = "";
+            joueursArray.forEach(j => {
+                html += `<div style="page-break-after:always; font-family:sans-serif; padding:20px; border:2px solid black; margin-bottom:20px;">
+                <h1 style="text-align:center">${NOM_TOURNOI}</h1>
+                <h2 style="background:#eee; padding:10px;">JOUEUR N°${j.num} : ${j.nom}</h2>
+                <table border="1" style="width:100%; border-collapse:collapse; text-align:center; font-size:24px; margin-top:20px;">
+                <tr style="background:#ddd"><th>PARTIE</th><th>TABLE</th><th>MA SIGNATURE</th></tr>`;
+                state.rotation.forEach((p, i) => {
+                    let tNum = 0; p.forEach((t, ti) => { if(t.includes(j.id)) tNum = ti+1; });
+                    html += `<tr><td style="padding:15px">Partie ${i+1}</td><td style="font-weight:bold">TABLE ${tNum}</td><td></td></tr>`;
+                });
+                html += `</table>
+                <p style="margin-top:30px; font-size:12px; font-style:italic;">Vérifiez bien votre numéro de table à chaque tour.</p>
+                </div>`;
+            });
+            w.document.write(html); w.print();
+        }
+
+        function downloadBackup() {
+            const now = new Date();
+            const dateStr = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, '0') + "-" + String(now.getDate()).padStart(2, '0') + "_" + String(now.getHours()).padStart(2, '0') + "h" + String(now.getMinutes()).padStart(2, '0');
+            const blob = new Blob([JSON.stringify(state)], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Sauvegarde_Tarot_${dateStr}.json`;
+            a.click();
+        }
+
+        function importBackup(input) {
+            const reader = new FileReader();
+            reader.onload = (e) => { state = JSON.parse(e.target.result); save(); location.reload(); };
+            reader.readAsText(input.files[0]);
+        }
+        function removePlayer(id) { if(confirm("Supprimer ?")) { state.joueurs = state.joueurs.filter(j => j.id !== id); state.rotation = null; save(); } }
+        
+        renderInscriptions();
+        updatePlayerSelect();
+    </script>
+</body>
+</html>
