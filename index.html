@@ -2,21 +2,21 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>TAROT C.GASNIER  VERSION FINALE</title>
-	<link rel="icon" type="image/png" href="favicon.png/icon-192.png">
-	<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#064e3b">
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <title>TAROT C.GASNIER - ÉDITION CONFORT</title>
+    <link rel="icon" type="image/png" href="favicon.png/icon-192.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#064e3b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #064e3b; color: white; font-family: sans-serif; }
-        .table-box { background: #1f2937; border: 2px solid #374151; border-radius: 8px; padding: 10px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.4); height: fit-content; }
+        .table-box { background: #1f2937; border: 2px solid #374151; border-radius: 12px; padding: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.4); height: fit-content; }
         
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
 
-        .input-score { width: 52px; color: black; text-align: center; font-weight: 800; border-radius: 4px; padding: 4px 0; border: 1px solid rgba(0,0,0,0.2); font-size: 0.95rem; }
-        .input-score:focus { outline: none; border-color: white; background-color: #fff !important; }
+        .input-score { width: 62px; height: 45px; color: black; text-align: center; font-weight: 800; border-radius: 6px; border: 1px solid rgba(0,0,0,0.2); font-size: 1.1rem; }
+        .input-score:focus { outline: none; border-color: #fbbf24; background-color: #fff !important; }
 
         .col-d1 { background-color: #fef08a !important; }
         .col-d2 { background-color: #bbf7d0 !important; }
@@ -25,15 +25,29 @@
         .col-d5 { background-color: #fed7aa !important; }
         .col-d6 { background-color: #ddd6fe !important; }
 
-        .balance-ok { color: #10b981; font-weight: 900; font-size: 0.7rem; }
-        .balance-err { color: #ef4444; background: rgba(239, 68, 68, 0.2); border-radius: 2px; font-weight: 900; font-size: 0.7rem; } 
+        .balance-ok { color: #10b981; font-weight: 900; font-size: 0.75rem; }
+        .balance-err { color: #ef4444; background: rgba(239, 68, 68, 0.2); border-radius: 4px; font-weight: 900; font-size: 0.75rem; padding: 2px; } 
         
-        .tab-btn { padding: 10px 20px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 0.75rem; }
+        .tab-btn { padding: 12px 24px; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 0.85rem; }
         .active { background: #facc15 !important; color: black !important; }
         
-        .pos-label { font-size: 0.55rem; font-weight: 900; color: rgba(255,255,255,0.4); text-transform: uppercase; }
-        .nom-joueur { font-size: 0.8rem; color: #fbbf24; text-transform: uppercase; font-weight: 800; }
+        .pos-label { font-size: 0.55rem; font-weight: 900; color: rgba(255,255,255,0.3); text-transform: uppercase; margin-bottom: -2px; }
         
+        /* MODIFICATION : Nom plus petit et passage à la ligne autorisé */
+        .nom-joueur { 
+            font-size: 0.85rem; 
+            color: #fbbf24; 
+            text-transform: uppercase; 
+            font-weight: 700; 
+            line-height: 1.1;
+            word-break: break-word;
+            max-width: 130px; 
+        }
+        
+        .custom-scroll::-webkit-scrollbar { width: 10px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #facc15; border-radius: 10px; }
+
         @media print {
             .no-print { display: none !important; }
             body { background: white; color: black; }
@@ -44,74 +58,64 @@
 </head>
 <body class="p-4">
 
-    <div class="text-center mb-6 no-print">
-        <h1 class="text-3xl font-black text-yellow-400 uppercase tracking-tighter italic">Concours Tarot C.Gasnier</h1>
-        <div class="flex justify-center gap-2 mt-4">
+    <div class="text-center mb-8 no-print">
+        <h1 class="text-3xl font-black text-yellow-400 uppercase italic tracking-tighter mb-6">CONCOURS TAROT C.GASNIER</h1>
+        <div class="flex flex-wrap justify-center gap-3">
             <button onclick="showSection('inscriptions')" id="btn-inscriptions" class="tab-btn bg-emerald-900 active">1. Inscriptions</button>
-            <button onclick="showSection('parties')" id="btn-parties" class="tab-btn bg-emerald-900">2. Tables/Donnes</button>
+            <button onclick="showSection('parties')" id="btn-parties" class="tab-btn bg-emerald-800">2. Tables / Donnes</button>
             <button onclick="showSection('classement')" id="btn-classement" class="tab-btn bg-emerald-900">3. Classement</button>
         </div>
     </div>
 
-    <section id="sec-inscriptions" class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
-        <div class="bg-black/40 p-6 rounded-xl border border-white/10 shadow-xl">
-            <div class="mb-6 pb-4 border-b border-white/10">
-                <h2 class="text-xs font-black text-yellow-400 uppercase mb-3 tracking-widest">⚙️ Configuration</h2>
-                <div class="flex items-center gap-3">
-                    <label class="text-[10px] font-bold uppercase opacity-60">Parties à jouer :</label>
-                    <select id="nbPartiesSelect" onchange="changeNbParties(this.value)" class="bg-white text-black font-black px-3 py-1 rounded text-sm">
-                        <option value="1">1 Partie</option>
-                        <option value="2">2 Parties</option>
-                        <option value="3">3 Parties</option>
-                        <option value="4">4 Parties</option>
-                        <option value="5">5 Parties</option>
-                        <option value="6">6 Parties</option>
+    <section id="sec-inscriptions" class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 no-print">
+        <div class="bg-black/40 p-10 rounded-2xl border border-white/10 shadow-xl">
+            <div class="mb-8 pb-6 border-b border-white/10">
+                <h2 class="text-sm font-black text-yellow-400 uppercase mb-4 tracking-widest">⚙️ Configuration</h2>
+                <div class="flex items-center gap-4">
+                    <label class="text-xs font-bold uppercase opacity-60">Parties à jouer :</label>
+                    <select id="nbPartiesSelect" onchange="changeNbParties(this.value)" class="bg-white text-black font-black px-4 py-2 rounded-lg text-sm outline-none">
+                        <option value="1">1 Partie</option><option value="2">2 Parties</option>
+                        <option value="3">3 Parties</option><option value="4" selected>4 Parties</option>
+                        <option value="5">5 Parties</option><option value="6">6 Parties</option>
                     </select>
                 </div>
             </div>
-            <h2 class="text-xs font-black text-emerald-400 uppercase mb-3 tracking-widest">📥 Importation noms</h2>
-            <textarea id="importArea" rows="5" class="w-full p-3 mb-3 text-black font-bold text-xs rounded" placeholder="Un nom par ligne..."></textarea>
-            <button onclick="importList()" class="w-full bg-blue-600 hover:bg-blue-500 p-2 rounded font-black text-white uppercase text-sm">Valider l'import</button>
-            <div class="mt-4 pt-4 border-t border-white/5 flex gap-2">
-                <input type="text" id="addName" placeholder="NOM PRÉNOM" class="flex-1 p-2 rounded text-black font-bold uppercase text-xs" onkeypress="if(event.key==='Enter') addPlayer()">
-                <button onclick="addPlayer()" class="bg-emerald-500 px-4 rounded font-black">+</button>
+            <h2 class="text-sm font-black text-emerald-400 uppercase mb-4 tracking-widest">📥 Importation noms</h2>
+            <textarea id="importArea" rows="8" class="w-full p-4 mb-4 text-black font-bold text-sm rounded-xl outline-none" placeholder="Un nom par ligne..."></textarea>
+            <button onclick="importList()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-black text-white uppercase text-base shadow-lg transition">Valider l'importation</button>
+            <div class="mt-8 pt-6 border-t border-white/5 flex gap-3">
+                <input type="text" id="addName" placeholder="NOM PRÉNOM" class="flex-1 p-3.5 rounded-lg text-black font-bold uppercase text-sm outline-none" onkeypress="if(event.key==='Enter') addPlayer()">
+                <button onclick="addPlayer()" class="bg-emerald-500 px-6 rounded-lg font-black text-xl hover:bg-emerald-400 transition">+</button>
             </div>
         </div>
-        <div class="bg-black/20 p-6 rounded-xl border border-white/5">
-            <h2 class="text-xs font-black text-yellow-500 uppercase mb-3 italic tracking-widest">📋 Liste des Inscrits</h2>
-            <div id="playerList" class="grid grid-cols-1 gap-1 max-h-[300px] overflow-y-auto pr-2"></div>
-            <div class="mt-4 flex justify-between items-center border-t border-white/10 pt-2">
-                <button onclick="clearAllData()" class="text-red-400 text-[9px] uppercase font-bold hover:underline">Reset</button>
-                <div class="font-black text-yellow-400 text-xs italic" id="statCount">0 Joueurs</div>
+
+        <div class="bg-black/20 p-10 rounded-2xl border border-white/5 shadow-inner">
+            <h2 class="text-sm font-black text-yellow-500 uppercase mb-4 italic tracking-widest">📋 Liste des Inscrits</h2>
+            <div id="playerList" class="grid grid-cols-1 gap-2.5 max-h-[480px] overflow-y-auto pr-3 custom-scroll"></div>
+            <div class="mt-8 flex justify-between items-center border-t border-white/10 pt-4">
+                <button onclick="clearAllData()" class="text-red-400 text-xs uppercase font-bold hover:underline">Reset Tournoi</button>
+                <div class="font-black text-yellow-400 text-base italic" id="statCount">0 Joueurs</div>
             </div>
         </div>
     </section>
 
     <section id="sec-parties" class="hidden">
-        <div class="flex flex-wrap gap-2 mb-6 justify-center no-print" id="nav-parties"></div>
-        <div id="zone-tables" class="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-[1400px] mx-auto px-2"></div>
+        <div class="flex flex-wrap gap-2 mb-8 justify-center no-print" id="nav-parties"></div>
+        <div id="zone-tables" class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1400px] mx-auto px-2"></div>
     </section>
 
-    <section id="sec-classement" class="hidden max-w-xl mx-auto bg-black/50 p-6 rounded-2xl border-2 border-yellow-500 relative">
-        <button onclick="window.print()" class="absolute top-4 right-4 bg-yellow-500 text-black px-4 py-1 rounded-full font-black text-[10px] no-print">IMPRIMER PDF</button>
+    <section id="sec-classement" class="hidden max-w-xl mx-auto bg-black/60 p-8 rounded-2xl border-2 border-yellow-500 relative shadow-2xl">
+        <button onclick="window.print()" class="absolute top-6 right-6 bg-yellow-500 text-black px-5 py-1 rounded-full font-black text-xs no-print hover:bg-yellow-400 transition">IMPRIMER PDF</button>
         <div id="classement-content"></div>
     </section>
 
     <script>
-        // Chargement des données au démarrage
         let allPlayers = JSON.parse(localStorage.getItem('tarot_players')) || []; 
         let donnesData = JSON.parse(localStorage.getItem('tarot_scores')) || {}; 
         let totalParties = parseInt(localStorage.getItem('tarot_nb_parties')) || 4;
-        let currentPartieIdx = 0;
+        let currentIdx = 0;
 
-        // On bloque la fermeture accidentelle
-        window.onbeforeunload = function() { return "Attention, quittez-vous vraiment le tournoi ?"; };
-
-        // Initialisation de l'affichage
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('nbPartiesSelect').value = totalParties;
-            renderInscriptions();
-        });
+        window.onbeforeunload = function() { return "Attention, quittez-vous vraiment ?"; };
 
         function saveData() {
             localStorage.setItem('tarot_players', JSON.stringify(allPlayers));
@@ -122,19 +126,13 @@
         function changeNbParties(val) {
             totalParties = parseInt(val);
             saveData();
-            // On réinitialise l'index si on a réduit le nombre de parties
-            if (currentPartieIdx >= totalParties) currentPartieIdx = 0;
-            // On force le rendu si l'onglet est visible
-            if (!document.getElementById('sec-parties').classList.contains('hidden')) {
-                renderPartie(currentPartieIdx);
-            }
+            if (currentIdx >= totalParties) currentIdx = 0;
+            if (!document.getElementById('sec-parties').classList.contains('hidden')) renderPartie(currentIdx);
         }
 
         function clearAllData() {
-            if(confirm("Effacer définitivement tous les joueurs et les scores ?")) {
+            if(confirm("⚠ RESET COMPLET ?")) {
                 allPlayers = []; donnesData = {}; localStorage.clear();
-                totalParties = 4;
-                document.getElementById('nbPartiesSelect').value = 4;
                 renderInscriptions(); showSection('inscriptions');
             }
         }
@@ -142,26 +140,40 @@
         function addPlayer() {
             const input = document.getElementById('addName');
             const name = input.value.trim().toUpperCase();
-            if (name) { allPlayers.push({ nom: name }); input.value = ""; saveData(); renderInscriptions(); }
+            if (name) { 
+                allPlayers.push({ nom: name }); 
+                input.value = ""; 
+                saveData(); 
+                renderInscriptions(); 
+            }
         }
 
         function importList() {
             const area = document.getElementById('importArea');
-            if (!area.value.trim()) return;
-            area.value.split('\n').forEach(line => {
+            const lines = area.value.split('\n');
+            let count = 0;
+            lines.forEach(line => {
                 const clean = line.trim().toUpperCase();
-                if (clean) allPlayers.push({ nom: clean });
+                if (clean) {
+                    allPlayers.push({ nom: clean });
+                    count++;
+                }
             });
-            area.value = ""; saveData(); renderInscriptions();
+            if (count > 0) {
+                area.value = ""; 
+                saveData(); 
+                renderInscriptions();
+            }
         }
 
         function renderInscriptions() {
             const list = document.getElementById('playerList');
+            if (!list) return;
             list.innerHTML = allPlayers.map((p, i) => `
-                <div class="flex justify-between bg-white/5 p-1 px-3 rounded items-center border border-white/5 text-[11px]">
-                    <span class="font-mono text-emerald-500 font-bold w-6">${i+1}</span>
-                    <span class="font-bold flex-1 uppercase truncate">${p.nom}</span>
-                    <button onclick="allPlayers.splice(${i},1);saveData();renderInscriptions()" class="text-red-500 font-black px-2">×</button>
+                <div class="flex justify-between bg-white/5 p-2 px-4 rounded-lg items-center border border-white/5">
+                    <span class="font-mono text-emerald-500 font-bold text-xs w-8">${i+1}</span>
+                    <span class="font-bold flex-1 uppercase truncate text-sm px-2">${p.nom}</span>
+                    <button onclick="allPlayers.splice(${i},1);saveData();renderInscriptions()" class="text-red-500 font-black px-2 hover:scale-125 transition">×</button>
                 </div>
             `).join('');
             document.getElementById('statCount').innerText = allPlayers.length + " Joueurs (" + Math.floor(allPlayers.length/4) + " Tables)";
@@ -172,7 +184,7 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('sec-' + id).classList.remove('hidden');
             document.getElementById('btn-' + id).classList.add('active');
-            if (id === 'parties') renderPartie(currentPartieIdx);
+            if (id === 'parties') renderPartie(currentIdx);
             if (id === 'classement') renderClassement();
         }
 
@@ -185,63 +197,58 @@
         }
 
         function renderPartie(idx) {
-            currentPartieIdx = idx;
+            currentIdx = idx;
             const nbTables = Math.floor(allPlayers.length / 4);
             const zoneNav = document.getElementById('nav-parties');
-            
-            let navHtml = "";
-            for(let i=0; i < totalParties; i++) {
-                navHtml += `<button onclick="renderPartie(${i})" class="tab-btn ${idx === i ? 'active' : 'bg-emerald-800 hover:bg-emerald-700 text-white'}">Partie ${i+1}</button>`;
-            }
-            zoneNav.innerHTML = navHtml;
+            zoneNav.innerHTML = Array.from({length: totalParties}, (_, i) => 
+                `<button onclick="renderPartie(${i})" class="tab-btn ${idx === i ? 'active' : 'bg-emerald-800 hover:bg-emerald-700 text-white'}">Partie ${i+1}</button>`
+            ).join('');
 
             const zone = document.getElementById('zone-tables');
-            zone.innerHTML = (nbTables === 0) ? "<div class='text-center py-10 opacity-30'>Aucune table.</div>" : "";
+            zone.innerHTML = (nbTables === 0) ? "<div class='text-center py-20 opacity-30 text-xl'>Ajoutez des joueurs.</div>" : "";
 
             for (let t = 0; t < nbTables; t++) {
                 let tableDiv = document.createElement('div');
                 tableDiv.className = "table-box";
-                
                 let nomsTable = [];
                 [0,1,2,3].forEach(pos => {
-                    let tOrigine = t;
+                    let tO = t;
                     if (idx > 0) {
-                        if (pos === 1) tOrigine = (t - idx + nbTables) % nbTables;
-                        else if (pos === 2) tOrigine = (t - (idx * 2) + nbTables * idx) % nbTables;
-                        else if (pos === 3) tOrigine = (t + (idx * 2)) % nbTables;
+                        if (pos === 1) tO = (t - idx + nbTables) % nbTables;
+                        else if (pos === 2) tO = (t - (idx * 2) + nbTables * idx) % nbTables;
+                        else if (pos === 3) tO = (t + (idx * 2)) % nbTables;
                     }
-                    nomsTable.push({ nom: allPlayers[(tOrigine * 4) + pos].nom });
+                    nomsTable.push(allPlayers[(tO * 4) + pos].nom);
                 });
 
                 let tableHtml = `
-                <div class="flex justify-between items-center mb-2 border-b border-yellow-500/50 pb-1">
-                    <span class="text-sm font-black text-yellow-400 italic">TABLE ${t+1}</span>
-                    <span class="text-[8px] font-bold opacity-30 uppercase">N / S+1 / E+2 / O-2</span>
+                <div class="flex justify-between items-center mb-3 border-b border-yellow-500/50 pb-1">
+                    <span class="text-base font-black text-yellow-400 italic">TABLE ${t+1}</span>
+                    <span class="text-[9px] font-bold opacity-30 uppercase tracking-widest text-right">S+1 / E+2 / O-2</span>
                 </div>
                 <table class="w-full">
-                    <thead><tr><th class="w-[30%]"></th>${[1,2,3,4,5,6].map(d => `<th class="text-[8px] font-black text-emerald-400">D${d}</th>`).join('')}<th class="text-yellow-500 font-black text-[10px]">TOT</th></tr></thead>
+                    <thead><tr><th class="w-[35%]"></th>${[1,2,3,4,5,6].map(d => `<th class="text-[9px] font-black text-emerald-400">D${d}</th>`).join('')}<th class="text-yellow-500 font-black text-xs">TOT</th></tr></thead>
                     <tbody>`;
 
-                nomsTable.forEach((joueur, pos) => {
-                    let sumRow = 0;
+                nomsTable.forEach((nom, pos) => {
+                    let totalRow = (donnesData[idx] && donnesData[idx][t]) ? [0,1,2,3,4,5].reduce((acc, d) => acc + (donnesData[idx][t][d][pos] || 0), 0) : 0;
                     tableHtml += `<tr class="border-b border-white/5">
-                        <td class="py-1">
+                        <td class="py-1 pr-1">
                             <div class="pos-label">${["NORD","SUD","EST","OUEST"][pos]}</div>
-                            <div class="nom-joueur truncate w-[100px]">${joueur.nom}</div>
+                            <div class="nom-joueur">${nom}</div>
                         </td>
                         ${[0,1,2,3,4,5].map(d => {
-                            const score = (donnesData[idx] && donnesData[idx][t]) ? donnesData[idx][t][d][pos] : 0;
-                            sumRow += score;
-                            return `<td class="text-center px-0.5"><input type="number" value="${score !== 0 ? score : ''}" onchange="updateScore(${idx}, ${t}, ${d}, ${pos}, this.value)" class="input-score col-d${d+1}"></td>`;
+                            const val = (donnesData[idx] && donnesData[idx][t]) ? donnesData[idx][t][d][pos] : 0;
+                            return `<td class="text-center"><input type="number" value="${val !== 0 ? val : ''}" onchange="updateScore(${idx},${t},${d},${pos},this.value)" class="input-score col-d${d+1}"></td>`;
                         }).join('')}
-                        <td class="text-center font-black text-sm text-yellow-400 italic">${sumRow}</td>
+                        <td class="text-center font-black text-lg text-yellow-400 italic">${totalRow}</td>
                     </tr>`;
                 });
 
-                tableHtml += `<tr><td class="text-right pr-2 py-1 text-[7px] font-bold opacity-20 uppercase italic">Balance :</td>`;
+                tableHtml += `<tr><td class="text-right pr-2 py-2 text-[8px] font-bold opacity-20 uppercase italic">Balance :</td>`;
                 for (let d = 0; d < 6; d++) {
-                    const colScore = (donnesData[idx] && donnesData[idx][t]) ? donnesData[idx][t][d].reduce((a,b)=>a+b, 0) : 0;
-                    tableHtml += `<td class="text-center ${colScore === 0 ? 'balance-ok' : 'balance-err'}">${colScore === 0 ? 'OK' : colScore}</td>`;
+                    const balance = (donnesData[idx] && donnesData[idx][t]) ? donnesData[idx][t][d].reduce((a,b)=>a+b, 0) : 0;
+                    tableHtml += `<td class="text-center ${balance === 0 ? 'balance-ok' : 'balance-err'}">${balance === 0 ? 'OK' : balance}</td>`;
                 }
                 tableHtml += `<td></td></tr></tbody></table>`;
                 tableDiv.innerHTML = tableHtml;
@@ -250,32 +257,34 @@
         }
 
         function renderClassement() {
-            let resultats = allPlayers.map((p, pIdx) => {
-                let total = 0; const nbTables = Math.floor(allPlayers.length / 4);
-                for (let partie = 0; partie < totalParties; partie++) {
-                    if (donnesData[partie]) {
-                        for (let table in donnesData[partie]) {
+            let res = allPlayers.map((p, pIdx) => {
+                let score = 0; const nT = Math.floor(allPlayers.length / 4);
+                for (let pI = 0; pI < totalParties; pI++) {
+                    if (donnesData[pI]) {
+                        for (let t in donnesData[pI]) {
                             for (let d = 0; d < 6; d++) {
                                 for(let pos=0; pos<4; pos++) {
-                                    let tO = parseInt(table); let pI = partie;
+                                    let tO = parseInt(t);
                                     if (pI > 0) {
-                                        if (pos === 1) tO = (parseInt(table) - pI + nbTables) % nbTables;
-                                        else if (pos === 2) tO = (parseInt(table) - (pI * 2) + nbTables * pI) % nbTables;
-                                        else if (pos === 3) tO = (parseInt(table) + (pI * 2)) % nbTables;
+                                        if (pos === 1) tO = (parseInt(t) - pI + nT) % nT;
+                                        else if (pos === 2) tO = (parseInt(t) - (pI * 2) + nT * pI) % nT;
+                                        else if (pos === 3) tO = (parseInt(t) + (pI * 2)) % nT;
                                     }
-                                    if ((tO * 4) + pos === pIdx) total += donnesData[partie][table][d][pos];
+                                    if ((tO * 4) + pos === pIdx) score += donnesData[pI][t][d][pos];
                                 }
                             }
                         }
                     }
                 }
-                return { nom: p.nom, total };
-            });
-            resultats.sort((a,b) => b.total - a.total);
+                return { nom: p.nom, score };
+            }).sort((a,b) => b.score - a.score);
+
             document.getElementById('classement-content').innerHTML = `
-                <div class="text-center mb-4"><h2 class="text-2xl font-black text-yellow-400 uppercase italic">CLASSEMENT FINAL</h2><p class="text-[8px] opacity-40 font-bold uppercase tracking-tighter">Basé sur ${totalParties} parties jouées</p></div>
-                <table class="w-full">${resultats.map((p, i) => `<tr class="border-b border-white/5"><td class="py-2 font-black text-emerald-500 text-sm w-12">#${i+1}</td><td class="py-2 font-black uppercase text-[11px]">${p.nom}</td><td class="py-2 text-right font-black text-yellow-400 text-lg italic">${p.total}</td></tr>`).join('')}</table>`;
+                <div class="text-center mb-6"><h2 class="text-3xl font-black text-yellow-400 uppercase italic">CLASSEMENT GÉNÉRAL</h2><p class="text-xs opacity-40 font-bold uppercase tracking-widest mt-2">Basé sur ${totalParties} parties jouées</p></div>
+                <table class="w-full">${res.map((p, i) => `<tr class="border-b border-white/10 hover:bg-white/5 transition"><td class="py-3 font-black text-emerald-500 text-lg w-16">#${i+1}</td><td class="py-3 font-black uppercase text-sm">${p.nom}</td><td class="py-3 text-right font-black text-yellow-400 text-2xl italic">${p.score}</td></tr>`).join('')}</table>`;
         }
+        
+        document.addEventListener('DOMContentLoaded', renderInscriptions);
     </script>
 </body>
 </html>
