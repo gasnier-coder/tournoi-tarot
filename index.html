@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>TAROT C.GASNIER - ÉDITION CONFORT</title>
+    <title>TAROT C.GASNIER</title>
     <link rel="icon" type="image/png" href="favicon.png/icon-192.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#064e3b">
@@ -31,12 +31,16 @@
         .tab-btn { padding: 12px 24px; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 0.85rem; }
         .active { background: #facc15 !important; color: black !important; }
         
-        .pos-label { font-size: 0.55rem; font-weight: 900; color: rgba(255,255,255,0.3); text-transform: uppercase; margin-bottom: -2px; }
+        .pos-label { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; margin-bottom: -2px; }
         
-        /* MODIFICATION : Nom plus petit et passage à la ligne autorisé */
+        .color-0 { color: #facc15; } /* NORD - Jaune */
+        .color-1 { color: #34d399; } /* SUD - Vert */
+        .color-2 { color: #60a5fa; } /* EST - Bleu */
+        .color-3 { color: #f472b6; } /* OUEST - Rose */
+
         .nom-joueur { 
             font-size: 0.85rem; 
-            color: #fbbf24; 
+            color: white; 
             text-transform: uppercase; 
             font-weight: 700; 
             line-height: 1.1;
@@ -53,6 +57,7 @@
             body { background: white; color: black; }
             .table-box { border: 1px solid black; box-shadow: none; break-inside: avoid; margin-bottom: 10px; }
             .grid { display: block !important; }
+            .color-0, .color-1, .color-2, .color-3 { color: black !important; font-weight: bold; border-bottom: 1px solid #ccc; }
         }
     </style>
 </head>
@@ -71,20 +76,34 @@
         <div class="bg-black/40 p-10 rounded-2xl border border-white/10 shadow-xl">
             <div class="mb-8 pb-6 border-b border-white/10">
                 <h2 class="text-sm font-black text-yellow-400 uppercase mb-4 tracking-widest">⚙️ Configuration</h2>
-                <div class="flex items-center gap-4">
-                    <label class="text-xs font-bold uppercase opacity-60">Parties à jouer :</label>
-                    <select id="nbPartiesSelect" onchange="changeNbParties(this.value)" class="bg-white text-black font-black px-4 py-2 rounded-lg text-sm outline-none">
-                        <option value="1">1 Partie</option><option value="2">2 Parties</option>
-                        <option value="3">3 Parties</option><option value="4" selected>4 Parties</option>
-                        <option value="5">5 Parties</option><option value="6">6 Parties</option>
-                    </select>
+                <div class="flex items-center gap-4 flex-wrap">
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-bold uppercase opacity-60">Parties :</label>
+                        <select id="nbPartiesSelect" onchange="changeNbParties(this.value)" class="bg-white text-black font-black px-4 py-2 rounded-lg text-sm outline-none">
+                            <option value="1">1</option><option value="2">2</option>
+                            <option value="3">3</option><option value="4" selected>4</option>
+                            <option value="5">5</option><option value="6">6</option>
+                        </select>
+                    </div>
+                    <a href="https://docs.google.com/spreadsheets/d/1ekzYwuJw7-RWROY59yhtnq-XdJT5DDp2/edit?usp=drive_link&ouid=104567429589630085217&rtpof=true&sd=true" target="_blank" class="bg-yellow-600 hover:bg-yellow-500 text-white font-black px-4 py-2 rounded-lg text-[10px] uppercase shadow-lg transition">
+                        📄 Imprimer Fiche Score
+                    </a>
                 </div>
             </div>
             <h2 class="text-sm font-black text-emerald-400 uppercase mb-4 tracking-widest">📥 Importation noms</h2>
             <textarea id="importArea" rows="8" class="w-full p-4 mb-4 text-black font-bold text-sm rounded-xl outline-none" placeholder="Un nom par ligne..."></textarea>
-            <button onclick="importList()" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-black text-white uppercase text-base shadow-lg transition">Valider l'importation</button>
-            <div class="mt-8 pt-6 border-t border-white/5 flex gap-3">
+            <div class="flex gap-2">
+                <button onclick="importList()" class="flex-1 bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-black text-white uppercase text-xs shadow-lg transition">Importer (Nord)</button>
+                <button onclick="autoDistribute()" class="flex-1 bg-purple-600 hover:bg-purple-500 py-4 rounded-xl font-black text-white uppercase text-xs shadow-lg transition">Importer + Dispatcher N/S/E/O</button>
+            </div>
+            <div class="mt-8 pt-6 border-t border-white/5 flex gap-3 flex-wrap">
                 <input type="text" id="addName" placeholder="NOM PRÉNOM" class="flex-1 p-3.5 rounded-lg text-black font-bold uppercase text-sm outline-none" onkeypress="if(event.key==='Enter') addPlayer()">
+                <select id="addPos" class="bg-white text-black font-bold p-3 rounded-lg text-sm">
+                    <option value="0">NORD</option>
+                    <option value="1">SUD</option>
+                    <option value="2">EST</option>
+                    <option value="3">OUEST</option>
+                </select>
                 <button onclick="addPlayer()" class="bg-emerald-500 px-6 rounded-lg font-black text-xl hover:bg-emerald-400 transition">+</button>
             </div>
         </div>
@@ -139,9 +158,10 @@
 
         function addPlayer() {
             const input = document.getElementById('addName');
+            const posSelect = document.getElementById('addPos');
             const name = input.value.trim().toUpperCase();
             if (name) { 
-                allPlayers.push({ nom: name }); 
+                allPlayers.push({ nom: name, posInitiale: parseInt(posSelect.value) }); 
                 input.value = ""; 
                 saveData(); 
                 renderInscriptions(); 
@@ -151,28 +171,42 @@
         function importList() {
             const area = document.getElementById('importArea');
             const lines = area.value.split('\n');
-            let count = 0;
             lines.forEach(line => {
                 const clean = line.trim().toUpperCase();
-                if (clean) {
-                    allPlayers.push({ nom: clean });
-                    count++;
-                }
+                if (clean) allPlayers.push({ nom: clean, posInitiale: 0 });
             });
-            if (count > 0) {
-                area.value = ""; 
-                saveData(); 
-                renderInscriptions();
-            }
+            area.value = ""; saveData(); renderInscriptions();
+        }
+
+        function autoDistribute() {
+            const area = document.getElementById('importArea');
+            const lines = area.value.split('\n').filter(l => l.trim() !== "");
+            lines.forEach((line, idx) => {
+                const clean = line.trim().toUpperCase();
+                allPlayers.push({ nom: clean, posInitiale: idx % 4 });
+            });
+            area.value = ""; saveData(); renderInscriptions();
+        }
+
+        function changePlayerPos(idx, newPos) {
+            allPlayers[idx].posInitiale = parseInt(newPos);
+            saveData();
+            renderInscriptions();
         }
 
         function renderInscriptions() {
             const list = document.getElementById('playerList');
             if (!list) return;
             list.innerHTML = allPlayers.map((p, i) => `
-                <div class="flex justify-between bg-white/5 p-2 px-4 rounded-lg items-center border border-white/5">
-                    <span class="font-mono text-emerald-500 font-bold text-xs w-8">${i+1}</span>
+                <div class="flex justify-between bg-white/5 p-2 px-4 rounded-lg items-center border border-white/5 gap-2">
+                    <span class="font-mono text-emerald-500 font-bold text-xs w-6">${i+1}</span>
                     <span class="font-bold flex-1 uppercase truncate text-sm px-2">${p.nom}</span>
+                    <select onchange="changePlayerPos(${i}, this.value)" class="bg-black/40 color-${p.posInitiale} text-[10px] font-black rounded px-2 py-1 outline-none border border-white/10">
+                        <option value="0" ${p.posInitiale === 0 ? 'selected' : ''}>NORD</option>
+                        <option value="1" ${p.posInitiale === 1 ? 'selected' : ''}>SUD</option>
+                        <option value="2" ${p.posInitiale === 2 ? 'selected' : ''}>EST</option>
+                        <option value="3" ${p.posInitiale === 3 ? 'selected' : ''}>OUEST</option>
+                    </select>
                     <button onclick="allPlayers.splice(${i},1);saveData();renderInscriptions()" class="text-red-500 font-black px-2 hover:scale-125 transition">×</button>
                 </div>
             `).join('');
@@ -210,15 +244,17 @@
             for (let t = 0; t < nbTables; t++) {
                 let tableDiv = document.createElement('div');
                 tableDiv.className = "table-box";
-                let nomsTable = [];
-                [0,1,2,3].forEach(pos => {
+                
+                let nomsTable = ["","","",""]; 
+                [0,1,2,3].forEach(posVisual => {
                     let tO = t;
                     if (idx > 0) {
-                        if (pos === 1) tO = (t - idx + nbTables) % nbTables;
-                        else if (pos === 2) tO = (t - (idx * 2) + nbTables * idx) % nbTables;
-                        else if (pos === 3) tO = (t + (idx * 2)) % nbTables;
+                        if (posVisual === 1) tO = (t - idx + nbTables) % nbTables;
+                        else if (posVisual === 2) tO = (t - (idx * 2) + nbTables * idx) % nbTables;
+                        else if (posVisual === 3) tO = (t + (idx * 2)) % nbTables;
                     }
-                    nomsTable.push(allPlayers[(tO * 4) + pos].nom);
+                    let p = allPlayers[(tO * 4) + posVisual];
+                    if(p) nomsTable[p.posInitiale] = p.nom;
                 });
 
                 let tableHtml = `
@@ -234,8 +270,8 @@
                     let totalRow = (donnesData[idx] && donnesData[idx][t]) ? [0,1,2,3,4,5].reduce((acc, d) => acc + (donnesData[idx][t][d][pos] || 0), 0) : 0;
                     tableHtml += `<tr class="border-b border-white/5">
                         <td class="py-1 pr-1">
-                            <div class="pos-label">${["NORD","SUD","EST","OUEST"][pos]}</div>
-                            <div class="nom-joueur">${nom}</div>
+                            <div class="pos-label color-${pos}">${["NORD","SUD","EST","OUEST"][pos]}</div>
+                            <div class="nom-joueur">${nom || "---"}</div>
                         </td>
                         ${[0,1,2,3,4,5].map(d => {
                             const val = (donnesData[idx] && donnesData[idx][t]) ? donnesData[idx][t][d][pos] : 0;
@@ -263,14 +299,16 @@
                     if (donnesData[pI]) {
                         for (let t in donnesData[pI]) {
                             for (let d = 0; d < 6; d++) {
-                                for(let pos=0; pos<4; pos++) {
+                                for(let posVisual=0; posVisual<4; posVisual++) {
                                     let tO = parseInt(t);
                                     if (pI > 0) {
-                                        if (pos === 1) tO = (parseInt(t) - pI + nT) % nT;
-                                        else if (pos === 2) tO = (parseInt(t) - (pI * 2) + nT * pI) % nT;
-                                        else if (pos === 3) tO = (parseInt(t) + (pI * 2)) % nT;
+                                        if (posVisual === 1) tO = (parseInt(t) - pI + nT) % nT;
+                                        else if (posVisual === 2) tO = (parseInt(t) - (pI * 2) + nT * pI) % nT;
+                                        else if (posVisual === 3) tO = (parseInt(t) + (pI * 2)) % nT;
                                     }
-                                    if ((tO * 4) + pos === pIdx) score += donnesData[pI][t][d][pos];
+                                    if ((tO * 4) + posVisual === pIdx) {
+                                        score += donnesData[pI][t][d][p.posInitiale];
+                                    }
                                 }
                             }
                         }
