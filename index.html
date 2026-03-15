@@ -28,47 +28,52 @@
         .balance-ok { color: #10b981; font-weight: 900; font-size: 0.75rem; }
         .balance-err { color: #ef4444; background: rgba(239, 68, 68, 0.2); border-radius: 4px; font-weight: 900; font-size: 0.75rem; padding: 2px; } 
         
-        .tab-btn { padding: 12px 24px; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 0.85rem; }
+        .tab-btn { padding: 12px 20px; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 0.8rem; }
         .active { background: #facc15 !important; color: black !important; }
         
         .pos-label { font-size: 0.65rem; font-weight: 900; text-transform: uppercase; margin-bottom: -2px; }
         
-        .color-0 { color: #facc15; } /* NORD - Jaune */
-        .color-1 { color: #34d399; } /* SUD - Vert */
-        .color-2 { color: #60a5fa; } /* EST - Bleu */
-        .color-3 { color: #f472b6; } /* OUEST - Rose */
+        .color-0 { color: #facc15; }
+        .color-1 { color: #34d399; }
+        .color-2 { color: #60a5fa; }
+        .color-3 { color: #f472b6; }
 
-        .nom-joueur { 
-            font-size: 0.85rem; 
-            color: white; 
-            text-transform: uppercase; 
-            font-weight: 700; 
-            line-height: 1.1;
-            word-break: break-word;
-            max-width: 130px; 
-        }
+        .nom-joueur { font-size: 0.85rem; color: white; text-transform: uppercase; font-weight: 700; line-height: 1.1; word-break: break-word; max-width: 130px; }
         
-        .custom-scroll::-webkit-scrollbar { width: 10px; }
-        .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #facc15; border-radius: 10px; }
+        /* Notification de sauvegarde */
+        #toast { visibility: hidden; min-width: 250px; background-color: #10b981; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 100; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
         @media print {
-            .no-print { display: none !important; }
-            body { background: white; color: black; }
-            .table-box { border: 1px solid black; box-shadow: none; break-inside: avoid; margin-bottom: 10px; }
-            .grid { display: block !important; }
-            .color-0, .color-1, .color-2, .color-3 { color: black !important; font-weight: bold; border-bottom: 1px solid #ccc; }
+            .no-print, header, nav, .tab-btn, h1, #sec-inscriptions, #sec-parties, .flex, #toast { display: none !important; }
+            body { background: white !important; color: black !important; padding: 0 !important; }
+            #sec-classement { display: block !important; border: 2px solid black !important; width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 20px !important; background: white !important; color: black !important; box-shadow: none !important; }
+            #classement-content table { color: black !important; }
+            .text-yellow-400, .text-emerald-500 { color: black !important; }
         }
     </style>
 </head>
 <body class="p-4">
 
+    <div id="toast">✅ Sauvegarde effectuée !</div>
+
     <div class="text-center mb-8 no-print">
         <h1 class="text-3xl font-black text-yellow-400 uppercase italic tracking-tighter mb-6">CONCOURS TAROT C.GASNIER</h1>
-        <div class="flex flex-wrap justify-center gap-3">
-            <button onclick="showSection('inscriptions')" id="btn-inscriptions" class="tab-btn bg-emerald-900 active">1. Inscriptions</button>
-            <button onclick="showSection('parties')" id="btn-parties" class="tab-btn bg-emerald-800">2. Tables / Donnes</button>
-            <button onclick="showSection('classement')" id="btn-classement" class="tab-btn bg-emerald-900">3. Classement</button>
+        <div class="flex flex-wrap justify-center items-center gap-3">
+            <button onclick="clearAllData()" class="bg-red-900/50 hover:bg-red-700 text-red-200 text-[10px] font-black uppercase px-4 py-3 rounded-lg transition mr-4 border border-red-500/30">🗑️ Reset</button>
+            <div class="flex gap-2">
+                <button onclick="showSection('inscriptions')" id="btn-inscriptions" class="tab-btn bg-emerald-900 active">1. Inscriptions</button>
+                <button onclick="showSection('parties')" id="btn-parties" class="tab-btn bg-emerald-800">2. Tables / Donnes</button>
+                <button onclick="showSection('classement')" id="btn-classement" class="tab-btn bg-emerald-900">3. Classement</button>
+            </div>
+            <div class="flex gap-2 ml-4">
+                <button onclick="exportToJson()" title="Exporter JSON" class="bg-gray-700 hover:bg-gray-600 text-white text-[10px] font-black uppercase px-4 py-3 rounded-lg transition border border-white/10">💾 Sauver</button>
+                <button onclick="document.getElementById('fileInput').click()" title="Charger JSON" class="bg-gray-700 hover:bg-gray-600 text-white text-[10px] font-black uppercase px-4 py-3 rounded-lg transition border border-white/10">📂 Charger</button>
+                <input type="file" id="fileInput" class="hidden" accept=".json" onchange="importFromJson(event)">
+            </div>
         </div>
     </div>
 
@@ -79,13 +84,9 @@
                 <div class="flex items-center gap-4 flex-wrap">
                     <label class="text-xs font-bold uppercase opacity-60">Parties :</label>
                     <select id="nbPartiesSelect" onchange="changeNbParties(this.value)" class="bg-white text-black font-black px-4 py-2 rounded-lg text-sm outline-none">
-                        <option value="1">1</option><option value="2">2</option>
-                        <option value="3">3</option><option value="4" selected>4</option>
-                        <option value="5">5</option><option value="6">6</option>
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option>
                     </select>
-                    <a href="https://drive.google.com/file/d/1C-meUfZkFz29jbWjWTBssd8NJu279BUq/view" target="_blank" class="bg-yellow-600 hover:bg-yellow-500 text-white font-black px-4 py-2 rounded-lg text-[10px] uppercase shadow-lg transition">
-                        📄 Fiche Score
-                    </a>
+                    <a href="https://drive.google.com/file/d/1C-meUfZkFz29jbWjWTBssd8NJu279BUq/view" target="_blank" class="bg-yellow-600 hover:bg-yellow-500 text-white font-black px-4 py-2 rounded-lg text-[10px] uppercase shadow-lg transition">📄 Fiche Score</a>
                 </div>
             </div>
             <h2 class="text-sm font-black text-emerald-400 uppercase mb-4 tracking-widest">📥 Importation noms</h2>
@@ -97,33 +98,28 @@
             <div class="mt-8 pt-6 border-t border-white/5 flex gap-3 flex-wrap">
                 <input type="text" id="addName" placeholder="NOM PRÉNOM" class="flex-1 p-3.5 rounded-lg text-black font-bold uppercase text-sm outline-none" onkeypress="if(event.key==='Enter') addPlayer()">
                 <select id="addPos" class="bg-white text-black font-bold p-3 rounded-lg text-sm">
-                    <option value="0">NORD</option>
-                    <option value="1">SUD</option>
-                    <option value="2">EST</option>
-                    <option value="3">OUEST</option>
+                    <option value="0">NORD</option><option value="1">SUD</option><option value="2">EST</option><option value="3">OUEST</option>
                 </select>
                 <button onclick="addPlayer()" class="bg-emerald-500 px-6 rounded-lg font-black text-xl hover:bg-emerald-400 transition">+</button>
             </div>
         </div>
-
         <div class="bg-black/20 p-10 rounded-2xl border border-white/5 shadow-inner">
             <h2 class="text-sm font-black text-yellow-500 uppercase mb-4 italic tracking-widest">📋 Liste des Inscrits</h2>
             <div id="playerList" class="grid grid-cols-1 gap-2.5 max-h-[480px] overflow-y-auto pr-3 custom-scroll"></div>
-            <div class="mt-8 flex justify-between items-center border-t border-white/10 pt-4">
-                <button onclick="clearAllData()" class="text-red-400 text-xs uppercase font-bold hover:underline">Reset Tournoi</button>
+            <div class="mt-8 border-t border-white/10 pt-4 flex justify-end">
                 <div class="font-black text-yellow-400 text-base italic" id="statCount">0 Joueurs</div>
             </div>
         </div>
     </section>
 
-    <section id="sec-parties" class="hidden">
-        <div class="flex flex-wrap gap-2 mb-8 justify-center no-print" id="nav-parties"></div>
+    <section id="sec-parties" class="hidden no-print">
+        <div class="flex flex-wrap gap-2 mb-8 justify-center" id="nav-parties"></div>
         <div id="zone-tables" class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1400px] mx-auto px-2"></div>
     </section>
 
     <section id="sec-classement" class="hidden max-w-xl mx-auto bg-black/60 p-8 rounded-2xl border-2 border-yellow-500 relative shadow-2xl">
-        <button onclick="window.print()" class="absolute top-6 right-6 bg-yellow-500 text-black px-5 py-1 rounded-full font-black text-xs no-print hover:bg-yellow-400 transition">IMPRIMER PDF</button>
-        <div id="classement-content"></div>
+        <button onclick="window.print()" class="absolute top-4 right-6 bg-yellow-500 text-black px-5 py-1 rounded-full font-black text-xs no-print hover:bg-yellow-400 transition italic">IMPRIMER PDF</button>
+        <div id="classement-content" class="mt-4"></div>
     </section>
 
     <script>
@@ -132,7 +128,13 @@
         let totalParties = parseInt(localStorage.getItem('tarot_nb_parties')) || 4;
         let currentIdx = 0;
 
-        window.onbeforeunload = function() { return "Attention, quittez-vous vraiment ?"; };
+        window.onbeforeunload = function() { return "Attention, vos données non sauvegardées seront perdues."; };
+
+        function showToast() {
+            const x = document.getElementById("toast");
+            x.className = "show";
+            setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
+        }
 
         function saveData() {
             localStorage.setItem('tarot_players', JSON.stringify(allPlayers));
@@ -140,15 +142,38 @@
             localStorage.setItem('tarot_nb_parties', totalParties);
         }
 
+        function exportToJson() {
+            const dateStr = new Date().toLocaleString('fr-FR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/[/:]/g, '-');
+            const dataToSave = { date: new Date().toISOString(), nbParties: totalParties, players: allPlayers, scores: donnesData };
+            const blob = new Blob([JSON.stringify(dataToSave, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Tournoi_Tarot_${dateStr}.json`; a.click(); URL.revokeObjectURL(url);
+            showToast(); // Confirmation visuelle
+        }
+
+        function importFromJson(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (confirm("Charger cette sauvegarde ? Cela écrasera les données actuelles.")) {
+                        allPlayers = data.players || []; donnesData = data.scores || {}; totalParties = data.nbParties || 4;
+                        document.getElementById('nbPartiesSelect').value = totalParties; saveData(); renderInscriptions(); alert("Sauvegarde chargée !");
+                    }
+                } catch (err) { alert("Erreur : Fichier invalide."); }
+            };
+            reader.readAsText(file); event.target.value = '';
+        }
+
         function changeNbParties(val) {
-            totalParties = parseInt(val);
-            saveData();
+            totalParties = parseInt(val); saveData();
             if (currentIdx >= totalParties) currentIdx = 0;
             if (!document.getElementById('sec-parties').classList.contains('hidden')) renderPartie(currentIdx);
         }
 
         function clearAllData() {
-            if(confirm("⚠ RESET COMPLET ?")) {
+            if(confirm("⚠ RESET COMPLET DU TOURNOI ?")) {
                 allPlayers = []; donnesData = {}; localStorage.clear();
                 renderInscriptions(); showSection('inscriptions');
             }
@@ -156,56 +181,39 @@
 
         function addPlayer() {
             const input = document.getElementById('addName');
-            const posSelect = document.getElementById('addPos');
             const name = input.value.trim().toUpperCase();
             if (name) { 
-                allPlayers.push({ nom: name, posInitiale: parseInt(posSelect.value) }); 
-                input.value = ""; 
-                saveData(); 
-                renderInscriptions(); 
+                allPlayers.push({ nom: name, posInitiale: parseInt(document.getElementById('addPos').value) }); 
+                input.value = ""; saveData(); renderInscriptions(); 
             }
         }
 
         function importList() {
-            const area = document.getElementById('importArea');
-            const lines = area.value.split('\n');
-            lines.forEach(line => {
-                const clean = line.trim().toUpperCase();
-                if (clean) allPlayers.push({ nom: clean, posInitiale: 0 });
+            document.getElementById('importArea').value.split('\n').forEach(line => {
+                const clean = line.trim().toUpperCase(); if (clean) allPlayers.push({ nom: clean, posInitiale: 0 });
             });
-            area.value = ""; saveData(); renderInscriptions();
+            document.getElementById('importArea').value = ""; saveData(); renderInscriptions();
         }
 
         function autoDistribute() {
-            const area = document.getElementById('importArea');
-            const lines = area.value.split('\n').filter(l => l.trim() !== "");
-            lines.forEach((line, idx) => {
-                const clean = line.trim().toUpperCase();
-                allPlayers.push({ nom: clean, posInitiale: idx % 4 });
+            document.getElementById('importArea').value.split('\n').filter(l => l.trim() !== "").forEach((line, idx) => {
+                allPlayers.push({ nom: line.trim().toUpperCase(), posInitiale: idx % 4 });
             });
-            area.value = ""; saveData(); renderInscriptions();
+            document.getElementById('importArea').value = ""; saveData(); renderInscriptions();
         }
 
-        function changePlayerPos(idx, newPos) {
-            allPlayers[idx].posInitiale = parseInt(newPos);
-            saveData();
-            renderInscriptions();
-        }
+        function changePlayerPos(idx, newPos) { allPlayers[idx].posInitiale = parseInt(newPos); saveData(); renderInscriptions(); }
 
         function renderInscriptions() {
-            const list = document.getElementById('playerList');
-            if (!list) return;
+            const list = document.getElementById('playerList'); if (!list) return;
             list.innerHTML = allPlayers.map((p, i) => `
                 <div class="flex justify-between bg-white/5 p-2 px-4 rounded-lg items-center border border-white/5 gap-2">
                     <span class="font-mono text-emerald-500 font-bold text-xs w-6">${i+1}</span>
                     <span class="font-bold flex-1 uppercase truncate text-sm px-2">${p.nom}</span>
                     <select onchange="changePlayerPos(${i}, this.value)" class="bg-black/40 color-${p.posInitiale} text-[10px] font-black rounded px-2 py-1 outline-none border border-white/10">
-                        <option value="0" ${p.posInitiale === 0 ? 'selected' : ''}>NORD</option>
-                        <option value="1" ${p.posInitiale === 1 ? 'selected' : ''}>SUD</option>
-                        <option value="2" ${p.posInitiale === 2 ? 'selected' : ''}>EST</option>
-                        <option value="3" ${p.posInitiale === 3 ? 'selected' : ''}>OUEST</option>
+                        <option value="0" ${p.posInitiale === 0 ? 'selected' : ''}>NORD</option><option value="1" ${p.posInitiale === 1 ? 'selected' : ''}>SUD</option><option value="2" ${p.posInitiale === 2 ? 'selected' : ''}>EST</option><option value="3" ${p.posInitiale === 3 ? 'selected' : ''}>OUEST</option>
                     </select>
-                    <button onclick="allPlayers.splice(${i},1);saveData();renderInscriptions()" class="text-red-500 font-black px-2 hover:scale-125 transition">×</button>
+                    <button onclick="allPlayers.splice(${i},1);saveData();renderInscriptions()" class="text-red-500 font-black px-2">×</button>
                 </div>
             `).join('');
             document.getElementById('statCount').innerText = allPlayers.length + " Joueurs (" + Math.floor(allPlayers.length/4) + " Tables)";
@@ -224,25 +232,16 @@
             if (!donnesData[partie]) donnesData[partie] = {};
             if (!donnesData[partie][table]) donnesData[partie][table] = Array.from({length:6}, () => [0,0,0,0]);
             donnesData[partie][table][donne][pos] = parseInt(val) || 0;
-            saveData();
-            renderPartie(partie); 
+            saveData(); renderPartie(partie); 
         }
 
         function renderPartie(idx) {
             currentIdx = idx;
             const nbTables = Math.floor(allPlayers.length / 4);
-            const zoneNav = document.getElementById('nav-parties');
-            zoneNav.innerHTML = Array.from({length: totalParties}, (_, i) => 
-                `<button onclick="renderPartie(${i})" class="tab-btn ${idx === i ? 'active' : 'bg-emerald-800 hover:bg-emerald-700 text-white'}">Partie ${i+1}</button>`
-            ).join('');
-
-            const zone = document.getElementById('zone-tables');
-            zone.innerHTML = (nbTables === 0) ? "<div class='text-center py-20 opacity-30 text-xl'>Ajoutez des joueurs.</div>" : "";
-
+            document.getElementById('nav-parties').innerHTML = Array.from({length: totalParties}, (_, i) => `<button onclick="renderPartie(${i})" class="tab-btn ${idx === i ? 'active' : 'bg-emerald-800 hover:bg-emerald-700 text-white'}">Partie ${i+1}</button>`).join('');
+            const zone = document.getElementById('zone-tables'); zone.innerHTML = (nbTables === 0) ? "<div class='text-center py-20 opacity-30 text-xl'>Ajoutez des joueurs.</div>" : "";
             for (let t = 0; t < nbTables; t++) {
-                let tableDiv = document.createElement('div');
-                tableDiv.className = "table-box";
-                
+                let tableDiv = document.createElement('div'); tableDiv.className = "table-box";
                 let nomsTable = ["","","",""]; 
                 [0,1,2,3].forEach(posVisual => {
                     let tO = t;
@@ -251,42 +250,23 @@
                         else if (posVisual === 2) tO = (t - (idx * 2) + nbTables * idx) % nbTables;
                         else if (posVisual === 3) tO = (t + (idx * 2)) % nbTables;
                     }
-                    let p = allPlayers[(tO * 4) + posVisual];
-                    if(p) nomsTable[p.posInitiale] = p.nom;
+                    let p = allPlayers[(tO * 4) + posVisual]; if(p) nomsTable[p.posInitiale] = p.nom;
                 });
-
-                let tableHtml = `
-                <div class="flex justify-between items-center mb-3 border-b border-yellow-500/50 pb-1">
-                    <span class="text-base font-black text-yellow-400 italic">TABLE ${t+1}</span>
-                    <span class="text-[9px] font-bold opacity-30 uppercase tracking-widest text-right">S+1 / E+2 / O-2</span>
-                </div>
-                <table class="w-full">
-                    <thead><tr><th class="w-[35%]"></th>${[1,2,3,4,5,6].map(d => `<th class="text-[9px] font-black text-emerald-400">D${d}</th>`).join('')}<th class="text-yellow-500 font-black text-xs">TOT</th></tr></thead>
-                    <tbody>`;
-
+                let tableHtml = `<div class="flex justify-between items-center mb-3 border-b border-yellow-500/50 pb-1"><span class="text-base font-black text-yellow-400 italic">TABLE ${t+1}</span><span class="text-[9px] font-bold opacity-30 uppercase tracking-widest text-right">S+1 / E+2 / O-2</span></div><table class="w-full"><thead><tr><th class="w-[35%]"></th>${[1,2,3,4,5,6].map(d => `<th class="text-[9px] font-black text-emerald-400">D${d}</th>`).join('')}<th class="text-yellow-500 font-black text-xs">TOT</th></tr></thead><tbody>`;
                 nomsTable.forEach((nom, pos) => {
                     let totalRow = (donnesData[idx] && donnesData[idx][t]) ? [0,1,2,3,4,5].reduce((acc, d) => acc + (donnesData[idx][t][d][pos] || 0), 0) : 0;
-                    tableHtml += `<tr class="border-b border-white/5">
-                        <td class="py-1 pr-1">
-                            <div class="pos-label color-${pos}">${["NORD","SUD","EST","OUEST"][pos]}</div>
-                            <div class="nom-joueur">${nom || "---"}</div>
-                        </td>
+                    tableHtml += `<tr class="border-b border-white/5"><td class="py-1 pr-1"><div class="pos-label color-${pos}">${["NORD","SUD","EST","OUEST"][pos]}</div><div class="nom-joueur">${nom || "---"}</div></td>
                         ${[0,1,2,3,4,5].map(d => {
                             const val = (donnesData[idx] && donnesData[idx][t]) ? donnesData[idx][t][d][pos] : 0;
-                            return `<td class="text-center"><input type="number" value="${val !== 0 ? val : ''}" onchange="updateScore(${idx},${t},${d},${pos},this.value)" class="input-score col-d${d+1}"></td>`;
-                        }).join('')}
-                        <td class="text-center font-black text-lg text-yellow-400 italic">${totalRow}</td>
-                    </tr>`;
+                            return `<td class="text-center"><input type="number" value="${val !== 0 ? val : ''}" onfocus="this.select()" onchange="updateScore(${idx},${t},${d},${pos},this.value)" class="input-score col-d${d+1}"></td>`;
+                        }).join('')}<td class="text-center font-black text-lg text-yellow-400 italic">${totalRow}</td></tr>`;
                 });
-
                 tableHtml += `<tr><td class="text-right pr-2 py-2 text-[8px] font-bold opacity-20 uppercase italic">Balance :</td>`;
                 for (let d = 0; d < 6; d++) {
                     const balance = (donnesData[idx] && donnesData[idx][t]) ? donnesData[idx][t][d].reduce((a,b)=>a+b, 0) : 0;
                     tableHtml += `<td class="text-center ${balance === 0 ? 'balance-ok' : 'balance-err'}">${balance === 0 ? 'OK' : balance}</td>`;
                 }
-                tableHtml += `<td></td></tr></tbody></table>`;
-                tableDiv.innerHTML = tableHtml;
-                zone.appendChild(tableDiv);
+                tableHtml += `<td></td></tr></tbody></table>`; tableDiv.innerHTML = tableHtml; zone.appendChild(tableDiv);
             }
         }
 
@@ -304,9 +284,7 @@
                                         else if (posVisual === 2) tO = (parseInt(t) - (pI * 2) + nT * pI) % nT;
                                         else if (posVisual === 3) tO = (parseInt(t) + (pI * 2)) % nT;
                                     }
-                                    if ((tO * 4) + posVisual === pIdx) {
-                                        score += donnesData[pI][t][d][p.posInitiale];
-                                    }
+                                    if ((tO * 4) + posVisual === pIdx) score += donnesData[pI][t][d][p.posInitiale];
                                 }
                             }
                         }
@@ -314,12 +292,10 @@
                 }
                 return { nom: p.nom, score };
             }).sort((a,b) => b.score - a.score);
-
             document.getElementById('classement-content').innerHTML = `
-                <div class="text-center mb-6"><h2 class="text-3xl font-black text-yellow-400 uppercase italic">CLASSEMENT GÉNÉRAL</h2><p class="text-xs opacity-40 font-bold uppercase tracking-widest mt-2">Basé sur ${totalParties} parties jouées</p></div>
+                <div class="text-center mb-6"><h2 class="text-3xl font-black text-yellow-400 uppercase italic">CLASSEMENT GÉNÉRAL</h2><p class="text-xs opacity-40 font-bold uppercase tracking-widest mt-2">Tournoi en ${totalParties} parties</p></div>
                 <table class="w-full">${res.map((p, i) => `<tr class="border-b border-white/10 hover:bg-white/5 transition"><td class="py-3 font-black text-emerald-500 text-lg w-16">#${i+1}</td><td class="py-3 font-black uppercase text-sm">${p.nom}</td><td class="py-3 text-right font-black text-yellow-400 text-2xl italic">${p.score}</td></tr>`).join('')}</table>`;
         }
-        
         document.addEventListener('DOMContentLoaded', renderInscriptions);
     </script>
 </body>
