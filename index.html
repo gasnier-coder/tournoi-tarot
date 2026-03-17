@@ -147,7 +147,7 @@
             const dataToSave = { date: new Date().toISOString(), nbParties: totalParties, players: allPlayers, scores: donnesData };
             const blob = new Blob([JSON.stringify(dataToSave, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `Tournoi_Tarot_${dateStr}.json`; a.click(); URL.revokeObjectURL(url);
+            const a = document.createElement('a'); a.href = url; a.download = `Concours_Tarot_${dateStr}.json`; a.click(); URL.revokeObjectURL(url);
             showToast(); // Confirmation visuelle
         }
 
@@ -173,7 +173,7 @@
         }
 
         function clearAllData() {
-            if(confirm("⚠ RESET COMPLET DU TOURNOI ?")) {
+            if(confirm("⚠ RESET COMPLET DU CONCOURS ?")) {
                 allPlayers = []; donnesData = {}; localStorage.clear();
                 renderInscriptions(); showSection('inscriptions');
             }
@@ -293,7 +293,7 @@
                 return { nom: p.nom, score };
             }).sort((a,b) => b.score - a.score);
             document.getElementById('classement-content').innerHTML = `
-                <div class="text-center mb-6"><h2 class="text-3xl font-black text-yellow-400 uppercase italic">CLASSEMENT GÉNÉRAL</h2><p class="text-xs opacity-40 font-bold uppercase tracking-widest mt-2">Tournoi en ${totalParties} parties</p></div>
+                <div class="text-center mb-6"><h2 class="text-3xl font-black text-yellow-400 uppercase italic">CLASSEMENT GÉNÉRAL</h2><p class="text-xs opacity-40 font-bold uppercase tracking-widest mt-2">Concours en ${totalParties} parties</p></div>
                 <table class="w-full">${res.map((p, i) => `<tr class="border-b border-white/10 hover:bg-white/5 transition"><td class="py-3 font-black text-emerald-500 text-lg w-16">#${i+1}</td><td class="py-3 font-black uppercase text-sm">${p.nom}</td><td class="py-3 text-right font-black text-yellow-400 text-2xl italic">${p.score}</td></tr>`).join('')}</table>`;
         }
         document.addEventListener('DOMContentLoaded', renderInscriptions);
